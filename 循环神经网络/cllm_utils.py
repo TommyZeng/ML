@@ -10,7 +10,7 @@ def smooth(loss, cur_loss):
 def print_sample(sample_ix, ix_to_char):
     txt = ''.join(ix_to_char[ix] for ix in sample_ix)
     txt = txt[0].upper() + txt[1:]  # capitalize first character 
-    print ('%s' % (txt, ), end='')
+    print ('name:%s' % (txt, ), end='')
 
 def get_initial_loss(vocab_size, seq_length):
     return -np.log(1.0/vocab_size)*seq_length
@@ -54,6 +54,7 @@ def rnn_step_backward(dy, gradients, parameters, x, a, a_prev):
     
     gradients['dWya'] += np.dot(dy, a.T)
     gradients['dby'] += dy
+    # da = 当前损失函数对a的梯度，以及输入到下一个cell的a的梯度
     da = np.dot(parameters['Wya'].T, dy) + gradients['da_next'] # backprop into h
     daraw = (1 - a * a) * da # backprop through tanh nonlinearity
     gradients['db'] += daraw
@@ -93,6 +94,7 @@ def rnn_forward(X, Y, a0, parameters, vocab_size = 27):
         a[t], y_hat[t] = rnn_step_forward(parameters, a[t-1], x[t])
         
         # Update the loss by substracting the cross-entropy term of this time-step from it.
+        tmp = y_hat[t][Y[t],0]
         loss -= np.log(y_hat[t][Y[t],0])
         
     cache = (y_hat, a, x)
